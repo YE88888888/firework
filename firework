@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>微信烟花效果</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+            touch-action: none;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // 适配屏幕尺寸
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.radius = Math.random() * 2;
+                this.velocity = {
+                    x: (Math.random() - 0.5) * 10,
+                    y: (Math.random() - 0.5) * 10
+                };
+                this.alpha = 1;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.restore();
+            }
+
+            update() {
+                this.draw();
+                this.velocity.y += 0.01;
+                this.x += this.velocity.x;
+                this.y += this.velocity.y;
+                this.alpha -= 0.005;
+            }
+        }
+
+        let particles = [];
+
+        function animate() {
+            requestAnimationFrame(animate);
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            particles.forEach((particle, index) => {
+                if (particle.alpha > 0) {
+                    particle.update();
+                } else {
+                    particles.splice(index, 1);
+                }
+            });
+        }
+
+        // 触摸/点击事件
+        canvas.addEventListener('touchstart', createFirework);
+        canvas.addEventListener('click', createFirework);
+
+        function createFirework(e) {
+            const x = e.clientX || e.touches[0].clientX;
+            const y = e.clientY || e.touches[0].clientY;
+            
+            for (let i = 0; i < 100; i++) {
+                const color = `hsl(${Math.random() * 360}, 50%, 50%)`;
+                particles.push(new Particle(x, y, color));
+            }
+        }
+
+        // 自动播放（可选）
+        setInterval(() => {
+            createFirework({
+                clientX: Math.random() * canvas.width,
+                clientY: Math.random() * canvas.height
+            });
+        }, 2000);
+
+        animate();
+    </script>
+</body>
+</html>
